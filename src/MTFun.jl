@@ -8,9 +8,13 @@ export MalmquistTakenaka, hatify
 """
 `MalmquistTakenaka(λ)` is the space spanned by
 ```
-    (-i)^n sqrt(imag(λ)/π) * (λ - x)^n / (conj(λ) - x)^(n+1)
+    φ_n(x) = (-i)^{n+1} sqrt(|imag(λ)|/π) (λ - x)^n / (λ̄ - x)^(n+1)
 ```
-for all n ∈ ℤ.
+for all n ∈ ℤ. The canonical case λ = i/2 can also be written
+```
+    φ_n(x) =  i^n sqrt(2/π) (1 + 2ix)^n / (1- 2ix)^(n+1)
+``` 
+
 """
 
 struct MalmquistTakenaka{T<:Complex} <: Space{Line{false,T},T}
