@@ -207,3 +207,9 @@ coefficients(Fun(x->φ(x,-1),MT,5))
 coefficients(Fun(x->φ(x,1),MT,5))
 coefficients(Fun(x->φ(x,-2),MT,5))
 coefficients(Fun(x->φ(x,2),MT,5))
+
+f = x-> 1/(1+x^2) + 2im/(1+x^4)
+
+F = Fun(f,MT,1000)
+F(0.3+0.0im)
+f(0.3)
