@@ -191,3 +191,19 @@ H = differentiate(G)
 
 
 plot(G)
+
+using MTFun, ApproxFun, Plots
+MT = MalmquistTakenaka()
+φ = (x,n) -> (1.0im)^n * sqrt(2/π) * (1+2im*x)^n / (1-2im*x)^(n+1)
+coefficients(Fun(x->φ(x,0),MT,12))
+coefficients(Fun(x->φ(x,-1),MT,12))
+coefficients(Fun(x->φ(x,1),MT,12))
+coefficients(Fun(x->φ(x,-2),MT,12))
+coefficients(Fun(x->φ(x,2),MT,12))
+coefficients(Fun(x->φ(x,-3),MT,12))
+coefficients(Fun(x->φ(x,3),MT,12))
+coefficients(Fun(x->φ(x,0),MT,3))
+coefficients(Fun(x->φ(x,-1),MT,5))
+coefficients(Fun(x->φ(x,1),MT,5))
+coefficients(Fun(x->φ(x,-2),MT,5))
+coefficients(Fun(x->φ(x,2),MT,5))
