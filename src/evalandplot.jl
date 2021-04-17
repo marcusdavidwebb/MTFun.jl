@@ -1,4 +1,4 @@
-function horner(cfs::AbstractVector{T},z::T) where T
+function horner(cfs::AbstractVector,z::T) where T
     ret = zero(T)
     for k = length(cfs):-1:1
         ret = ret .* z + cfs[k]
@@ -7,10 +7,10 @@ function horner(cfs::AbstractVector{T},z::T) where T
 end
 
 ## Evaluate at a point using Horner's method (above)
-function evaluate(cfs::AbstractVector{T},S::MalmquistTakenaka{T},x::T) where T
-    z = -one(T)*im*(S.λ .- x)./(conj(S.λ) .- x)
-    ret = horner(cfs[1:2:end],z) ./ (conj(S.λ) .- x)
-    ret -= 1.0im*horner(cfs[2:2:end],inv.(z)) ./ (S.λ .+ x)
+function evaluate(cfs::AbstractVector,S::MalmquistTakenaka,x::T) where T
+    z = (-ones(T)im)*(S.λ .- x)./(conj(S.λ) .- x)
+    ret = (-ones(T)im)*horner(cfs[1:2:end],z) ./ (conj(S.λ) .- x)
+    ret += horner(cfs[2:2:end],inv.(z)) ./ (S.λ .- x)
     ret *= sqrt(abs(imag(S.λ))/π)
     ret
 end
