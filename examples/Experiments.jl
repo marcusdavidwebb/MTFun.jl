@@ -213,3 +213,13 @@ f = x-> 1/(1+x^2) + 2im/(1+x^4)
 F = Fun(f,MT,1000)
 F(0.3+0.0im)
 f(0.3)
+
+plot(F)
+
+v = randn(10)
+trans = MTFun.plan_transform(MT,v)
+itrans = MTFun.plan_itransform(MT,trans*v)
+
+trans*v
+itrans*(trans*v)
+v

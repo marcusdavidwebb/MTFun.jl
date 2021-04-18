@@ -9,7 +9,7 @@ function plan_transform(S::MalmquistTakenaka,vals::AbstractVector)
     TransformPlan(S,(weights,FastTransforms.plan_fft(complex(vals))),Val{false})
 end
 function plan_itransform(S::MalmquistTakenaka,cfs::AbstractVector)
-    weights = sqrt(abs(imag(S.λ))/π) ./ (conj(S.λ)-points(S,length(cfs)))
+    weights = sqrt(abs(imag(S.λ))/π) ./ (conj(S.λ) .- points(S,length(cfs)))
     ITransformPlan(S,(weights,FastTransforms.plan_ifft(complex(cfs))),Val{false})
 end
 function *(P::TransformPlan{T,S,false},vals::AbstractVector) where {T,S<:MalmquistTakenaka}
@@ -36,8 +36,8 @@ end
 # Deals with the fact that the positively and negatively indexed 
 # coefficients need to be interlaced
 function _imt_reorder_and_phase_shift(cfs::AbstractVector)
-    newcfs = copy(cfs)
     n = length(cfs)
+    newcfs = copy(cfs)
     newcfs[div(n,2)+1:n] = cfs[1:2:n]
     newcfs[div(n,2):-1:1] = cfs[2:2:n]
     newcfs .*= (one(eltype(cfs))*im).^(range(-floor(n/2)-1,length=n))
