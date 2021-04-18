@@ -208,13 +208,22 @@ coefficients(Fun(x->φ(x,1),MT,5))
 coefficients(Fun(x->φ(x,-2),MT,5))
 coefficients(Fun(x->φ(x,2),MT,5))
 
-f = x-> 1/(1+x^2) + 2im/(1+x^4)
+f = x-> 1/(1+x^2)
 
 F = Fun(f,MT,1000)
 F(0.3+0.0im)
 f(0.3)
-
+F(0.3)
 plot(F)
+
+F = Fun(f,MT)
+plot(hatify(coefficients(F))[1],abs.(hatify(coefficients(F))[2]),yscale=:log10)
+
+f = x-> exp(-x^2)
+
+F = Fun(f,MT)
+
+
 
 vals = φ.(points(MT,10),0)
 cfs = [1.0+0.0im;zeros(9)]
@@ -225,13 +234,26 @@ cfs - trans*vals
 
 vals - itrans*cfs
 
-FastTransforms.bfft
+λ = randn()+randn()im
+MT = MalmquistTakenaka(λ)
+φ = (x,n) -> (-1.0im)^(n+1)*sqrt(abs(imag(λ))/π) * (λ - x)^n / (conj(λ) - x)^(n+1)
+coefficients(Fun(x->φ(x,0),MT,12))
+coefficients(Fun(x->φ(x,-1),MT,12))
+coefficients(Fun(x->φ(x,1),MT,12))
+coefficients(Fun(x->φ(x,-2),MT,12))
+coefficients(Fun(x->φ(x,2),MT,12))
+coefficients(Fun(x->φ(x,-3),MT,12))
+coefficients(Fun(x->φ(x,3),MT,12))
+coefficients(Fun(x->φ(x,0),MT,3))
+coefficients(Fun(x->φ(x,-1),MT,5))
+coefficients(Fun(x->φ(x,1),MT,5))
+coefficients(Fun(x->φ(x,-2),MT,5))
+coefficients(Fun(x->φ(x,2),MT,5))
 
-n = length(cfs)
-newcfs = copy(cfs)
-newcfs[div(n,2)+1:n] = cfs[1:2:n]
-newcfs[div(n,2):-1:1] = cfs[2:2:n]
-newcfs .*= (one(eltype(cfs))*im).^(range(-floor(n/2)-1,length=n))
-w = FastTransforms.ifftshift(newcfs)
-weights,ifftplan = itrans.plan
-weights.*(ifftplan*(w)
+f = x->1/(1+x^4)
+
+F = Fun(f,MT)
+length(coefficients(F))
+plot(hatify(coefficients(F))[1],abs.(hatify(coefficients(F))[2]),yscale=:log10)
+
+
