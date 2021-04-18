@@ -216,10 +216,22 @@ f(0.3)
 
 plot(F)
 
-v = randn(10)
-trans = MTFun.plan_transform(MT,v)
-itrans = MTFun.plan_itransform(MT,trans*v)
+vals = φ.(points(MT,10),0)
+cfs = [1.0+0.0im;zeros(9)]
+trans = MTFun.plan_transform(MT,vals)
+itrans = MTFun.plan_itransform(MT,cfs)
 
-trans*v
-itrans*(trans*v)
-v
+cfs - trans*vals
+
+vals - itrans*cfs
+
+FastTransforms.bfft
+
+n = length(cfs)
+newcfs = copy(cfs)
+newcfs[div(n,2)+1:n] = cfs[1:2:n]
+newcfs[div(n,2):-1:1] = cfs[2:2:n]
+newcfs .*= (one(eltype(cfs))*im).^(range(-floor(n/2)-1,length=n))
+w = FastTransforms.ifftshift(newcfs)
+weights,ifftplan = itrans.plan
+weights.*(ifftplan*(w)

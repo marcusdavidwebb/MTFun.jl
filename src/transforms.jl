@@ -10,7 +10,7 @@ function plan_transform(S::MalmquistTakenaka,vals::AbstractVector)
 end
 function plan_itransform(S::MalmquistTakenaka,cfs::AbstractVector)
     weights = sqrt(abs(imag(S.λ))/π) ./ (conj(S.λ) .- points(S,length(cfs)))
-    ITransformPlan(S,(weights,FastTransforms.plan_ifft(complex(cfs))),Val{false})
+    ITransformPlan(S,(weights,FastTransforms.plan_bfft(complex(cfs))),Val{false})
 end
 function *(P::TransformPlan{T,S,false},vals::AbstractVector) where {T,S<:MalmquistTakenaka}
     weights,fftplan = P.plan
