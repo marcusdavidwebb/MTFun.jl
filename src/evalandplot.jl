@@ -23,3 +23,24 @@ function hatify(cfs::AbstractVector)
     newcfs[div(n,2)+mod(n,2):-1:1] = cfs[2:2:n]
     -div(n,2)-mod(n,2):div(n,2)-1, newcfs
 end
+
+function plot(f::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
+    λ = space(f).λ
+    a = real(λ) - 20*imag(λ)
+    b = real(λ) + 20*imag(λ)
+    plot([a,b],f)
+end
+
+function plot(interval,f::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
+    cfs = coefficients(f)
+    S = space(f)
+    n = min(200,length(cfs))
+    pts = points(S,n)
+    inds = findall(x -> interval[1] ≤ x ≤ interval[2],pts)
+    vals = itransform(S,cfs)
+    plot(pts[inds],real(vals[inds]))
+    if minimum(abs.(imag(vals))) ≥ 1e-4
+        plot!(pts[inds],imag(vals[inds]))
+    end
+end
+
