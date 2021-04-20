@@ -219,9 +219,9 @@ plot(F)
 F = Fun(f,MT)
 plot(hatify(coefficients(F))[1],abs.(hatify(coefficients(F))[2]),yscale=:log10)
 
-f = x-> exp(-x^2)
+f = x-> 1/(1-2im*x)
 
-F = Fun(f,MT)
+F = Fun(f,MT,1000)
 
 plot(F)
 

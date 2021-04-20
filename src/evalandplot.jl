@@ -35,15 +35,15 @@ end
     end
     n = length(cfs)
     pts = points(S,n)
-    pts = [pts[div(n,2)+2:n]; pts[1:div(n,2)+1]]
+    pts = [pts[div(n,2)+2:n]; pts[1:div(n,2)+mod(n,2)]]
     vals = itransform(S,cfs)
-    vals = [vals[div(n,2)+2:n]; vals[1:div(n,2)+1]]
+    vals = [vals[div(n,2)+2:n]; vals[1:div(n,2)+mod(n,2)]]
     
     inds = findall(x -> a ≤ x ≤ b,pts)
     @series begin 
         pts[inds],real(vals[inds])
     end
-    if minimum(abs.(imag(vals))) ≥ 1e-4
+    if maximum(abs.(imag(vals[inds]))) ≥ 1e-4
         @series begin
             pts[inds],imag(vals[inds])
         end
