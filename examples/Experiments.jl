@@ -223,7 +223,7 @@ f = x-> exp(-x^2)
 
 F = Fun(f,MT)
 
-
+plot(F)
 
 vals = φ.(points(MT,10),0)
 cfs = [1.0+0.0im;zeros(9)]
@@ -256,4 +256,9 @@ F = Fun(f,MT)
 length(coefficients(F))
 plot(hatify(coefficients(F))[1],abs.(hatify(coefficients(F))[2]),yscale=:log10)
 
+
+H = NormalizedHermite()
+G = GaussWeight(H,.5)
+
+F = Fun(x->cos(x)*exp(-x^2 / 2),G)
 

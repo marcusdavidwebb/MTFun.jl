@@ -24,23 +24,28 @@ function hatify(cfs::AbstractVector)
     -div(n,2)-mod(n,2):div(n,2)-1, newcfs
 end
 
-function plot(f::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
-    λ = space(f).λ
+@recipe function f(F::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
+    S = space(F)
+    λ = S.λ
     a = real(λ) - 20*imag(λ)
     b = real(λ) + 20*imag(λ)
-    plot([a,b],f)
-end
-
-function plot(interval,f::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
-    cfs = coefficients(f)
-    S = space(f)
-    n = min(200,length(cfs))
-    pts = points(S,n)
-    inds = findall(x -> interval[1] ≤ x ≤ interval[2],pts)
+    cfs = coefficients(F)
+    if length(cfs) < 200
+        pad!(cfs,200)
+    end
+    # reordering needed
+    pts = points(S,length(cfs))
     vals = itransform(S,cfs)
-    plot(pts[inds],real(vals[inds]))
+    inds = findall(x -> a ≤ x ≤ b,pts)
+    
+    @series begin 
+        pts[inds],real(vals[inds])
+    end
+
     if minimum(abs.(imag(vals))) ≥ 1e-4
-        plot!(pts[inds],imag(vals[inds]))
+        @series begin
+            pts[inds],imag(vals[inds])
+        end
     end
 end
 
