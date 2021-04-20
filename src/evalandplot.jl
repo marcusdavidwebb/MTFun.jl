@@ -27,21 +27,22 @@ end
 @recipe function f(F::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
     S = space(F)
     λ = S.λ
-    a = real(λ) - 20*imag(λ)
-    b = real(λ) + 20*imag(λ)
+    a = real(λ) - 30*imag(λ)
+    b = real(λ) + 30*imag(λ)
     cfs = coefficients(F)
     if length(cfs) < 200
         pad!(cfs,200)
     end
-    # reordering needed
-    pts = points(S,length(cfs))
+    n = length(cfs)
+    pts = points(S,n)
+    pts = [pts[div(n,2)+2:n]; pts[1:div(n,2)+1]]
     vals = itransform(S,cfs)
-    inds = findall(x -> a ≤ x ≤ b,pts)
+    vals = [vals[div(n,2)+2:n]; vals[1:div(n,2)+1]]
     
+    inds = findall(x -> a ≤ x ≤ b,pts)
     @series begin 
         pts[inds],real(vals[inds])
     end
-
     if minimum(abs.(imag(vals))) ≥ 1e-4
         @series begin
             pts[inds],imag(vals[inds])
