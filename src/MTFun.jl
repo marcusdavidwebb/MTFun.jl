@@ -1,7 +1,8 @@
 module MTFun
 
-using ApproxFun, FastTransforms, Plots
-import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate, ConcreteMultiplication, ConcreteDerivative
+using ApproxFun, ApproxFunBase, FastTransforms, Plots, LinearAlgebra
+import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
+import ApproxFunBase: ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
 import Base: *, first, last, getindex
 export MalmquistTakenaka, hatify
 
@@ -14,7 +15,6 @@ for all n ∈ ℤ. The canonical case λ = i/2 can also be written
 ```
     φ_n(x) =  i^n sqrt(2/π) (1 + 2ix)^n / (1- 2ix)^(n+1)
 ``` 
-
 """
 
 struct MalmquistTakenaka{T<:Complex} <: Space{Line{false,T},T}
@@ -37,5 +37,6 @@ canonicalspace(S::MalmquistTakenaka) = S
 include("transforms.jl")
 include("evalandplot.jl")
 include("operators.jl")
+include("Schrodinger.jl")
 
 end # module

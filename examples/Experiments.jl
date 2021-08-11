@@ -216,8 +216,12 @@ f(0.3)
 F(0.3)
 plot(F)
 
+G = Fun(f,MT)
+
 F = Fun(f,MT)
 plot(hatify(coefficients(F))[1],abs.(hatify(coefficients(F))[2]),yscale=:log10)
+
+H = F*G
 
 f = x-> 1/(1-2im*x)
 
@@ -261,4 +265,51 @@ H = NormalizedHermite()
 G = GaussWeight(H,.5)
 
 F = Fun(x->cos(x)*exp(-x^2 / 2),G)
+
+
+using MTFun, ApproxFun, Plots
+MT = MalmquistTakenaka()
+D = Derivative(MT,1)
+
+using MTFun, ApproxFun, Plots
+MT = MalmquistTakenaka()
+ε = 1E-3
+#ε = 1E-1
+Δt = sqrt(ε)
+t= ε*Δt
+#N = Integer(round(1/ε))
+N = 4000
+u0 = Fun(x -> exp(- x^2),MT,N)
+V = x -> ε^2 * (4x^2 - 2)
+V = x -> 0;
+pts = points(u0)
+vals = u0.(pts)
+Vvals = V.(pts)
+newvals = Strang_step(vals,Vvals,MT,Δt,ε)
+u1 = Fun(MT,transform(MT,newvals))
+newvals = Strang_step(newvals,Vvals,MT,Δt,ε)
+u2 = Fun(MT,transform(MT,newvals))
+newvals = Strang_step(newvals,Vvals,MT,Δt,ε)
+u3 = Fun(MT,transform(MT,newvals))
+
+
+
+
+pltpts = LinRange(-10,10,1000)
+plot(pltpts,abs.(u0.(pltpts)))
+plot!(pltpts,abs.(u1.(pltpts)))
+plot!(pltpts,abs.(u2.(pltpts)))
+plot!(pltpts,abs.(u3.(pltpts)))
+
+plot(abs.(coefficients(u1)),yscale=:log10)
+
+using LinearAlgebra
+N = N/2
+egn = eigen(SymTridiagonal(Float64.(1:2:2N-1),Float64.(1:N-1)))
+τ = egn.vectors'
+M = exp.(1.0im*t*egn.values.^2)
+
+plot(real(M))
+
+
 
