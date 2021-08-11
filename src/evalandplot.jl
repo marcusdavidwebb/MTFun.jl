@@ -43,7 +43,7 @@ end
     @series begin 
         pts[inds],real(vals[inds])
     end
-    if maximum(abs.(imag(vals[inds]))) ≥ 1e-4
+    if maximum(abs.(imag(vals[inds]))) ≥ 1e-6
         @series begin
             pts[inds],imag(vals[inds])
         end
