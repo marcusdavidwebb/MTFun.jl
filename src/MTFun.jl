@@ -2,7 +2,7 @@ module MTFun
 
 using ApproxFun, ApproxFunBase, FastTransforms, Plots, LinearAlgebra
 import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
-import ApproxFunBase: ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
+import ApproxFunBase: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
 import Base: *, first, last, getindex
 export MalmquistTakenaka, hatify
 
@@ -37,6 +37,6 @@ canonicalspace(S::MalmquistTakenaka) = S
 include("transforms.jl")
 include("evalandplot.jl")
 include("operators.jl")
-include("Schrodinger.jl")
+#include("Schrodinger.jl")
 
 end # module
