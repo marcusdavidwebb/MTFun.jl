@@ -85,11 +85,7 @@ end
 ## Derivative MT to MT
 
 function Derivative(sp::MT,order::Integer) where MT <: MalmquistTakenaka
-    if order == 1
-        ConcreteDerivative(sp,order)
-    else
-        Derivative(sp,1)^order
-    end
+    ConcreteDerivative(sp,order)
 end
 
 space(D::ConcreteDerivative{MT}) where MT <: MalmquistTakenaka = D.space
@@ -98,13 +94,34 @@ bandwidths(D::ConcreteDerivative{MT}) where MT <: MalmquistTakenaka = 2*D.order,
 Base.stride(D::ConcreteDerivative{MT}) where MT <: MalmquistTakenaka = 2*D.order
 
 function getindex(D::ConcreteDerivative{MalmquistTakenaka{T},K,KK},k::Integer,j::Integer) where {T,K,KK}
-    if k == j
-        ((-one(T))^(k+1))im * (k-mod(k+1,2)) /(2*imag(space(D).λ))
-    elseif k == j+2
-        div(j+1,2) /(2*imag(space(D).λ))
-    elseif j == k+2
-        -div(k+1,2) /(2*imag(space(D).λ))
+    m = D.order
+    bandind = j-k
+
+    if m == 1
+        if bandind == 0
+            ((-one(T))^(j+1))im * (k-mod(k+1,2)) /(2imag(space(D).λ))
+        elseif bandind == 2
+            -div(k+1,2) /(2imag(space(D).λ))
+        elseif bandind == -2
+            div(j+1,2) /(2imag(space(D).λ))
+        else
+            zero(T)
+        end
+    elseif m == 2
+        if bandind == 0
+            -one(T) * (4div(k,2)^2 - 5div(k,2) + 2 ) /(2imag(space(D).λ))^2
+        elseif bandind == 2
+            -4im*div(k+1,2)^2 /(2imag(space(D).λ))^2
+        elseif bandind == -2
+            4im*div(j+1,2)^2 /(2imag(space(D).λ))^2
+        elseif bandind == 4
+            div(k+1,2)*div(k+3,2)/(2imag(space(D).λ))^2
+        elseif bandind == -4
+            div(j+1,2)*div(j+3,2)/(2imag(space(D).λ))^2
+        else
+            zero(T)
+        end
     else
-        zero(T)
+        error("Higher order MalmquistTakenaka derivatives are not supported yet")
     end
 end
