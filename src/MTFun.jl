@@ -2,19 +2,20 @@ module MTFun
 
 using ApproxFun, ApproxFunBase, FastTransforms, Plots, LinearAlgebra
 import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
-import ApproxFunBase: ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
+import ApproxFunBase: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
 import Base: *, first, last, getindex
-export MalmquistTakenaka, hatify
+export MalmquistTakenaka, Weideman, hatify
 
 """
 `MalmquistTakenaka(λ)` is the space spanned by
 ```
-    φ_n(x) = (-i)^{n+1} sqrt(|imag(λ)|/π) (λ - x)^n / (λ̄ - x)^(n+1)
+    φₙ(x) = (-i)^{n+1} sqrt(|imag(λ)|/π) (λ - x)^n / (λ̄ - x)^(n+1)
 ```
 for all n ∈ ℤ. The canonical case λ = i/2 can also be written
 ```
-    φ_n(x) =  i^n sqrt(2/π) (1 + 2ix)^n / (1- 2ix)^(n+1)
+    φₙ(x) =  i^n sqrt(2/π) (1 + 2ix)^n / (1 - 2ix)^(n+1)
 ``` 
+This basis is orthonormal in L₂(ℝ).
 """
 
 struct MalmquistTakenaka{T<:Complex} <: Space{Line{false,T},T}
@@ -34,9 +35,41 @@ Base.last(::Fun{<:MalmquistTakenaka{T}}) where T= zero(T)
 spacescompatible(a::MalmquistTakenaka,b::MalmquistTakenaka) = a.λ == b.λ
 canonicalspace(S::MalmquistTakenaka) = S
 
+"""
+`Weideman(λ)` is the space spanned by
+```
+    σₙ(x) = (-i)^n (λ - x)^n / (λ̄ - x)^n
+```
+for all n ∈ ℤ. The canonical case λ = i/2 can also be written
+```
+    σₙ(x) =  i^n (1 + 2ix)^n / (1 - 2ix)^n
+``` 
+This basis is orthonormal in L₂(ℝ,w), where w(x) = |imag(λ)| / (π*(x^2 - 2Real(λ)x + |λ|^2))
+"""
+
+struct Weideman{T<:Complex} <: Space{Line{false,T},T}
+    λ :: T
+end
+
+Weideman{T}() where T = Weideman{T}(one(T)*im/2)
+Weideman() = Weideman{ComplexF64}()
+
+domain(::Weideman{T}) where T = Line{false,T}()
+canonicaldomain(::Weideman{T}) where T = Line{false,T}()
+normalization(::Type{T}, ::Weideman, ::Int) where T = one(T)
+
+Base.first(::Fun{<:Weideman{T}}) where T = zero(T)
+Base.last(::Fun{<:Weideman{T}}) where T= zero(T)
+
+spacescompatible(a::Weideman,b::Weideman) = a.λ == b.λ
+canonicalspace(S::Weideman) = S
+
+spacescompatible(a::Weideman,b::MalmquistTakenaka) = a.λ == b.λ
+spacescompatible(a::MalmquistTakenaka,b::Weideman) = a.λ == b.λ
+
 include("transforms.jl")
 include("evalandplot.jl")
 include("operators.jl")
-include("Schrodinger.jl")
+#include("Schrodinger.jl")
 
 end # module

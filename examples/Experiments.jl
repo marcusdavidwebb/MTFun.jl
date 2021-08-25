@@ -311,5 +311,33 @@ M = exp.(1.0im*t*egn.values.^2)
 
 plot(real(M))
 
+f = Fun(x->exp(-x^2), MT)
+g = Fun(x-> -2x*exp(-x^2),MT)
+fprime = differentiate(f)
 
+plot(f)
+plot!(g)
+plot!(fprime)
+
+
+
+using MTFun, ApproxFun, Plots
+MT = MalmquistTakenaka()
+
+f = Fun(MT,[1.0+0.0im])
+f = Fun(x->exp(-x^2), MT)
+
+M = Multiplication(f,MT)
+
+g = M*f
+
+x = randn()
+f(x)
+g(x)
+f(x)^2
+
+D = Derivative(MT,2)
+
+D*D
+D^2
 
