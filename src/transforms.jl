@@ -1,9 +1,10 @@
 
 
-## Transform
+## Transforms for MalmquistTakenaka Space
 hasfasttransform(::MalmquistTakenaka) = true
 # note that one of these points is always infinity
 points(S::MalmquistTakenaka,n::Int) = real(S.λ) .+ imag(S.λ)*tan.(range(0 ,length=n,step=π/n))
+
 function plan_transform(S::MalmquistTakenaka,vals::AbstractVector)
     weights = sqrt(π/abs(imag(S.λ))).*(conj(S.λ) .- points(S,length(vals)))
     TransformPlan(S,(weights,FastTransforms.plan_fft(complex(vals))),Val{false})
@@ -20,6 +21,27 @@ function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:Malmqui
     weights,ifftplan = P.plan
     weights.*(ifftplan*(_imt_reorder_and_phase_shift(complex(cfs))))
 end
+
+## Transforms for Weideman Space
+hasfasttransform(::Weideman) = true
+# note that one of these points is always infinity
+points(S::Weideman,n::Int) = real(S.λ) .+ imag(S.λ)*tan.(range(0 ,length=n,step=π/n))
+
+function plan_transform(S::Weideman,vals::AbstractVector)
+    TransformPlan(S,FastTransforms.plan_fft(complex(vals)),Val{false})
+end
+function plan_itransform(S::Weideman,cfs::AbstractVector)
+    ITransformPlan(S,FastTransforms.plan_bfft(complex(cfs)),Val{false})
+end
+function *(P::TransformPlan{T,S,false},vals::AbstractVector) where {T,S<:Weideman}
+    fftplan = P.plan
+    _mt_reorder_scale_and_phase_shift(fftplan*((-one(T)im)*complex(vals)))
+end
+function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:Weideman}
+    ifftplan = P.plan
+    (one(T)im)*ifftplan*(_imt_reorder_and_phase_shift(complex(cfs)))
+end
+
 
 # Deals with the fact that the positively and negatively indexed 
 # coefficients need to be interlaced
