@@ -109,11 +109,11 @@ function getindex(D::ConcreteDerivative{MalmquistTakenaka{T},K,KK},k::Integer,j:
         end
     elseif m == 2
         if bandind == 0
-            -one(T) * (4div(k,2)^2 - 5div(k,2) + 2 ) /(2imag(space(D).λ))^2
+            -one(T) * (6div(k+1,2)^2 - 6div(k+1,2) + 2 ) /(2imag(space(D).λ))^2
         elseif bandind == 2
-            -4im*div(k+1,2)^2 /(2imag(space(D).λ))^2
+            ((-one(T))^k)*4im*div(k+1,2)^2 /(2imag(space(D).λ))^2
         elseif bandind == -2
-            4im*div(j+1,2)^2 /(2imag(space(D).λ))^2
+            ((-one(T))^(j+1))*4im*div(j+1,2)^2 /(2imag(space(D).λ))^2
         elseif bandind == 4
             div(k+1,2)*div(k+3,2)/(2imag(space(D).λ))^2
         elseif bandind == -4

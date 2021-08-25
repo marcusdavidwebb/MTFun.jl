@@ -77,7 +77,7 @@ end
     Fprime = differentiate(F)
     x = 0.78
     @test Fprime(x) ≈ fprime(x)
-    @test (differentiate(F,2))(x) ≈ (differentiate(Fprime))(x)
+    @test (Derivative(MT,2)*F)(x) ≈ (differentiate(Fprime))(x)
 
     f = x -> exp(-10x^2)
     fprime = x -> -20*x*exp(-10x^2)
@@ -85,7 +85,7 @@ end
     Fprime = differentiate(F)
     x = 0.78
     @test Fprime(x) ≈ fprime(x)
-    @test (differentiate(F,2))(x) ≈ (differentiate(Fprime))(x)
+    @test (Derivative(MT,2)*F)(x) ≈ (differentiate(Fprime))(x)
 
     g = x -> sech(x)^2
     G = Fun(g,MT)
