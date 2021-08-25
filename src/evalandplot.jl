@@ -7,11 +7,20 @@ function horner(cfs::AbstractVector,z::T) where T
 end
 
 ## Evaluate at a point using Horner's method (above)
-function evaluate(cfs::AbstractVector,S::MalmquistTakenaka,x::T) where T
-    z = (-ones(T)im)*(S.λ .- x)./(conj(S.λ) .- x)
-    ret = (-ones(T)im)*horner(cfs[1:2:end],z) ./ (conj(S.λ) .- x)
-    ret += horner(cfs[2:2:end],inv.(z)) ./ (S.λ .- x)
+function evaluate(cfs::AbstractVector,S::MalmquistTakenaka,x)
+    T = eltype(x)
+    z = (-one(T)im)*(S.λ .- x)./(conj(S.λ) .- x)
+    ret = (-one(T)im)*horner(cfs[1:2:end],z) ./ (conj(S.λ) .- x)
+    ret = ret .+ horner(cfs[2:2:end],inv.(z)) ./ (S.λ .- x)
     ret *= sqrt(abs(imag(S.λ))/π)
+    ret
+end
+
+function evaluate(cfs::AbstractVector,S::Weideman,x)
+    T = eltype(x)
+    z = (-one(T)im)*(S.λ .- x)./(conj(S.λ) .- x)
+    ret = horner(cfs[1:2:end],z)
+    ret = ret .+ horner([zero(T);cfs[2:2:end]],inv.(z))
     ret
 end
 
@@ -24,7 +33,7 @@ function hatify(cfs::AbstractVector)
     -div(n,2)-mod(n,2):div(n,2)-1, newcfs
 end
 
-@recipe function f(F::Fun{MalmquistTakenaka{T},T,Vector{T}}) where T
+@recipe function f(F::Fun{Sp,T,Vector{T}}) where {Sp<:Union{MalmquistTakenaka,Weideman},T}
     S = space(F)
     λ = S.λ
     a = real(λ) - 30*imag(λ)
