@@ -2,7 +2,8 @@ module MTFun
 
 using ApproxFun, ApproxFunBase, FastTransforms, Plots, LinearAlgebra
 import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
-import ApproxFunBase: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
+import ApproxFun: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
+#import FastGaussQuadrature: hermpoly_asy_airy
 import Base: *, first, last, getindex
 export MalmquistTakenaka, Weideman, hatify
 
@@ -29,9 +30,6 @@ domain(::MalmquistTakenaka{T}) where T = Line{false,T}()
 canonicaldomain(::MalmquistTakenaka{T}) where T = Line{false,T}()
 normalization(::Type{T}, ::MalmquistTakenaka, ::Int) where T = one(T)
 
-Base.first(::Fun{<:MalmquistTakenaka{T}}) where T = zero(T)
-Base.last(::Fun{<:MalmquistTakenaka{T}}) where T= zero(T)
-
 spacescompatible(a::MalmquistTakenaka,b::MalmquistTakenaka) = a.λ == b.λ
 canonicalspace(S::MalmquistTakenaka) = S
 
@@ -57,9 +55,6 @@ Weideman() = Weideman{ComplexF64}()
 domain(::Weideman{T}) where T = Line{false,T}()
 canonicaldomain(::Weideman{T}) where T = Line{false,T}()
 normalization(::Type{T}, ::Weideman, ::Int) where T = one(T)
-
-Base.first(::Fun{<:Weideman{T}}) where T = zero(T)
-Base.last(::Fun{<:Weideman{T}}) where T= zero(T)
 
 spacescompatible(a::Weideman,b::Weideman) = a.λ == b.λ
 canonicalspace(S::Weideman) = S
