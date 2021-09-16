@@ -3,9 +3,9 @@ module MTFun
 using ApproxFun, ApproxFunBase, FastTransforms, Plots, LinearAlgebra
 import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
 import ApproxFun: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
-#import FastGaussQuadrature: hermpoly_asy_airy
 import Base: *, first, last, getindex
-export MalmquistTakenaka, Weideman, hatify
+export MalmquistTakenaka, Weideman, HermiteFSE
+export hatify
 
 """
 `MalmquistTakenaka(λ)` is the space spanned by
@@ -65,6 +65,6 @@ spacescompatible(a::MalmquistTakenaka,b::Weideman) = a.λ == b.λ
 include("transforms.jl")
 include("evalandplot.jl")
 include("operators.jl")
-#include("Schrodinger.jl")
+include("Schrodinger.jl")
 
 end # module
