@@ -3,7 +3,7 @@
 ## Transforms for MalmquistTakenaka Space
 hasfasttransform(::MalmquistTakenaka) = true
 # note that one of these points is always infinity
-points(S::MalmquistTakenaka,n::Int) = real(S.λ) .+ imag(S.λ)*tan.(range(0 ,length=n,step=π/n))
+points(S::MalmquistTakenaka{T},n::Int) where T = real(S.λ) .+ imag(S.λ)*tan.(range(zero(T),length=n,step=π/n))
 
 function plan_transform(S::MalmquistTakenaka,vals::AbstractVector)
     weights = sqrt(π/abs(imag(S.λ))).*(conj(S.λ) .- points(S,length(vals)))
@@ -19,13 +19,15 @@ function *(P::TransformPlan{T,S,false},vals::AbstractVector) where {T,S<:Malmqui
 end
 function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:MalmquistTakenaka}
     weights,ifftplan = P.plan
-    weights.*(ifftplan*(_imt_reorder_and_phase_shift(complex(cfs))))
+    vals = weights.*(ifftplan*(_imt_reorder_and_phase_shift(complex(cfs))))
+    vals[div(length(vals),2)+1] = zero(T)
+    return vals
 end
 
 ## Transforms for Weideman Space
 hasfasttransform(::Weideman) = true
 # note that one of these points is always infinity
-points(S::Weideman,n::Int) = real(S.λ) .+ imag(S.λ)*tan.(range(0 ,length=n,step=π/n))
+points(S::Weideman{T},n::Int) where T = real(S.λ) .+ imag(S.λ)*tan.(range(zero(T) ,length=n,step=π/n))
 
 function plan_transform(S::Weideman,vals::AbstractVector)
     TransformPlan(S,FastTransforms.plan_fft(complex(vals)),Val{false})
@@ -45,10 +47,10 @@ end
 
 # Deals with the fact that the positively and negatively indexed 
 # coefficients need to be interlaced
-function _mt_reorder_scale_and_phase_shift(cfs::AbstractVector)
+function _mt_reorder_scale_and_phase_shift(cfs::Vector{T}) where T
     n = length(cfs)
     tmp = FastTransforms.fftshift(cfs)
-    tmp .*= (-one(eltype(cfs))*im).^(range(-floor(n/2)-1,length=n))/n
+    tmp .*= (-one(T)*im).^(range(-floor(n/2)-one(T),length=n))/n
     newcfs = copy(cfs)
     newcfs[1:2:n] = tmp[div(n,2)+1:n]
     newcfs[2:2:n] = tmp[div(n,2):-1:1]
@@ -57,11 +59,11 @@ end
 
 # Deals with the fact that the positively and negatively indexed 
 # coefficients need to be interlaced
-function _imt_reorder_and_phase_shift(cfs::AbstractVector)
+function _imt_reorder_and_phase_shift(cfs::Vector{T}) where T
     n = length(cfs)
     newcfs = copy(cfs)
     newcfs[div(n,2)+1:n] = cfs[1:2:n]
     newcfs[div(n,2):-1:1] = cfs[2:2:n]
-    newcfs .*= (one(eltype(cfs))*im).^(range(-floor(n/2)-1,length=n))
+    newcfs .*= (one(T)*im).^(range(-floor(n/2)-one(T),length=n))
     FastTransforms.ifftshift(newcfs)
 end
