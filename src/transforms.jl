@@ -3,7 +3,7 @@
 ## Transforms for MalmquistTakenaka Space
 hasfasttransform(::MalmquistTakenaka) = true
 # note that one of these points is always infinity
-points(S::MalmquistTakenaka{T},n::Int) where T = real(S.λ) .+ imag(S.λ)*tan.(range(zero(T),length=n,step=π/n))
+points(S::MalmquistTakenaka{T},n::Int) where T = real(S.λ) .+ imag(S.λ)*tan.(range(zero(real(T)),length=n,step=π/n))
 
 function plan_transform(S::MalmquistTakenaka,vals::AbstractVector)
     weights = sqrt(π/abs(imag(S.λ))).*(conj(S.λ) .- points(S,length(vals)))
@@ -20,7 +20,7 @@ end
 function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:MalmquistTakenaka}
     weights,ifftplan = P.plan
     vals = weights.*(ifftplan*(_imt_reorder_and_phase_shift(complex(cfs))))
-    vals[div(length(vals),2)+1] = zero(T)
+    vals[div(length(vals),2)+1] = zero(eltype(vals))
     return vals
 end
 
