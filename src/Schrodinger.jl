@@ -227,3 +227,68 @@ function eval_Hermite_function(n::Integer,x::T) where T <: Number
         return hk * exp(-x^2 / 2 - sum_log_scale)
     end
 end
+
+
+function slow_plan_Hermite_transform(n::Integer)
+
+    slowC = zeros(n+1,n+1)
+    x,~ = gausshermite(n+1)
+
+    ψn = sqrt(n+1)*eval_Hermite_function.(n,x)
+
+    for k = 0:n
+        slowC[k+1,:] = eval_Hermite_function.(k,x)./ψn
+    end
+
+    valweights = 1 ./ ψn
+
+    return valweights, slowC
+end
+
+function plan_Hermite_transform(n::Integer)
+    # faster but unstable
+    
+    C = zeros(n+1,n+1)
+    x,~ = gausshermite(n+1)
+
+    ψk = zeros(n+1)
+    ψkp1 = ones(n+1)
+    ψkp2 = zeros(n+1)
+    C[n+1,:] = ψkp1
+    sum_log_scale = zeros(n+1) 
+    for k = n:-1:1
+        # ψ_{n-1}(x) = sqrt(2/n) x ψ_{n}(x) - sqrt((n+1)/n)ψ_{n+1}(x)
+        ψk = sqrt(2/k)*x.*ψkp1 - sqrt((k+1)/k) * ψkp2
+        C[k,:] = ψk.*exp.(-sum_log_scale)
+        ψkp2, ψkp1 = ψkp1, ψk
+        scale = inv.(abs.(ψk))
+        log_scale = log.(scale)
+        ψk = ψk .* scale
+        ψkp1 = ψkp1 .* scale
+        ψkp2 = ψkp2 .* scale
+        # keep track of final rescaling factor
+        sum_log_scale[:] += log_scale[:]
+    end
+
+    valweights = 1.0 ./ eval_Hermite_function.(n,x)
+
+    return valweights/sqrt(n+1), C/sqrt(n+1)
+end
+
+function plan_transform(S::HermiteFSE,vals::AbstractVector)
+    valweights, C = slow_plan_Hermite_transform(length(vals))
+    TransformPlan(S,(valweights,C),Val{false})
+end
+function plan_itransform(S::HermiteFSE,cfs::AbstractVector)
+    valweights, C = slow_plan_Hermite_transform(length(cfs))
+    ITransformPlan(S,(valweights,C),Val{false})
+end
+
+function *(P::TransformPlan{T,S,false},vals::AbstractVector) where {T,S<:HermiteFSE}
+    valweights,C = P.plan
+    C*(valweights.*vals)
+end
+function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:HermiteFSE}
+    valweights,C = P.plan
+    (C' * cfs) ./ valweights
+end
