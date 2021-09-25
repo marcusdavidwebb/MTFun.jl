@@ -20,7 +20,7 @@ end
 function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:MalmquistTakenaka}
     weights,ifftplan = P.plan
     vals = weights.*(ifftplan*(_imt_reorder_and_phase_shift(complex(cfs))))
-    vals[div(length(vals),2)+1] = zero(eltype(vals))
+    if (iseven(length(vals))) vals[div(length(vals),2)+1] = zero(eltype(vals)) end
     return vals
 end
 
