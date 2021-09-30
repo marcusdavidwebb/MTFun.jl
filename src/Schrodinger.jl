@@ -220,7 +220,7 @@ function eval_Hermite_function(n::Integer,x::T) where T <: Number
         return x * exp(-x^2 / 2) * (4/convert(T,π))^(1/4)
     else
         hkm1 = convert(T,π)^(-1/4)       #h_0(x)
-        hk = sqrt(one(T)*2) * x * hkm2  #h_1(x)
+        hk = sqrt(one(T)*2) * x * hkm1  #h_1(x)
         sum_log_scale = zero(T)
         for k = 2:n 
             # hk = h_k(x), hkm1 = h_{k-1}(x), hkm2 = h_{k-2}(x) (actually, recaled versions thereof)
