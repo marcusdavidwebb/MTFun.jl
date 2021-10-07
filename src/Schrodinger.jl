@@ -185,6 +185,17 @@ function getindex(D::ConcreteDerivative{HermiteFSE{T},K,KK},k::Integer,j::Intege
 end
 
 function evaluate(cfs::AbstractVector,::HermiteFSE,x)
+    # Clenshaw's algorithm (implementation given here) can have overflow/underflow problems:
+    # T = eltype(x)
+    # n = length(cfs)   
+    # bk2 = zero(T)
+    # bk1 = convert(T,cfs[n])
+    # for k = n-1:-1:1
+    #     bk1,bk2 = convert(T,cfs[k]) + x*sqrt(2/k)*bk1 - sqrt(k/(k+1)) * bk2 , bk1
+    # end
+    # return bk1 * exp(-x^2 / 2) * convert(T,π)^(-1/4)
+
+    # Rescaled forward recurrence to avoid overflow/underflow
     T = eltype(x)
     n = length(cfs)
     ret = zero(T)
@@ -198,7 +209,7 @@ function evaluate(cfs::AbstractVector,::HermiteFSE,x)
         for k = 2:n-1
             # hk = h_k(x), hkm1 = h_{k-1}(x) (actually, recaled versions thereof)
             hkm1, hk = hk, sqrt(one(T)*2/k)*x*hk - sqrt((k-one(T))/k)*hkm1
-            # rescale values
+            # rescale values if necessary
             scale = (x->(x<one(T)) ? one(T) : inv(x))(abs(hk))
             hk *= scale
             hkm1 *= scale
@@ -210,103 +221,66 @@ function evaluate(cfs::AbstractVector,::HermiteFSE,x)
     return ret
 end
 
-function eval_Hermite_function(n::Integer,x::T) where T <: Number
-    # Stabalised version of 3 term recurrence (see appendix of B. Bunck, BIT Numerical Mathematics (2009))
-    # See also https://www.numbercrunch.de/blog/2014/08/calculating-the-hermite-functions/
-        
-    if (n == 0)
-        return exp(-x^2 / 2) * convert(T,π)^(-1/4)
-    elseif (n == 1)
-        return x * exp(-x^2 / 2) * (4/convert(T,π))^(1/4)
-    else
-        hkm1 = convert(T,π)^(-1/4)       #h_0(x)
-        hk = sqrt(one(T)*2) * x * hkm1  #h_1(x)
-        sum_log_scale = zero(T)
-        for k = 2:n 
-            # hk = h_k(x), hkm1 = h_{k-1}(x), hkm2 = h_{k-2}(x) (actually, recaled versions thereof)
-            hkm1, hk = hk, sqrt(one(T)*2/k)*x*hk - sqrt((k-one(T))/k)*hkm1
-            # rescale values
-            scale = (x->(x<one(T)) ? one(T) : inv(x))(abs(hk))
-            hk *= scale
-            hkm1 *= scale
-            # keep track of final rescaling factor
-            sum_log_scale += log(scale)
-        end
-        return hk * exp(-x^2 / 2 - sum_log_scale)
-    end
-end
+eval_Hermite_function(n::Integer,x::T) where T <: Number = evaluate([zeros(T,n);one(T)],HermiteFSE(zero(T)),x)
 
 ## Transforms for HermiteFSE space
-hasfasttransform(::MalmquistTakenaka) = true
+hasfasttransform(::HermiteFSE) = false
 # Gauss-Hermite points
 points(::HermiteFSE,n::Int) = gausshermite(n)[1]
 
-function slow_plan_Hermite_transform(n::Integer)
-
-    slowC = zeros(n+1,n+1)
-    x,~ = gausshermite(n+1)
-
-    ψn = sqrt(n+1)*eval_Hermite_function.(n,x)
-
-    for k = 0:n
-        slowC[k+1,:] = eval_Hermite_function.(k,x)./ψn
-    end
-
-    valweights = 1 ./ ψn
-
-    return valweights, slowC
-end
-
 function plan_Hermite_transform(n::Integer)
+   # builds the orthogonal matrix Q and weight vector 'valweights' such that
+   # the val2coeffs transform is Q * (valweights .* vals) and
+   # the coeffs2vals transform is (Q' * cfs) ./ valweights.
 
-    C = zeros(n+1,n+1)
+    Q = zeros(n+1,n+1)
     x,~ = gausshermite(n+1)
 
     hkm1 = ones(n+1)*π^(-1/4)       #h_0(x)
     hk = sqrt(2) * x .* hkm1  #h_1(x)
     cum_log_scale = zeros(n+1,n+1)
 
-    C[1,:] = hkm1
-    if (n ≥ 1) C[2,:] = hk end
+    Q[1,:] = hkm1
+    if (n ≥ 1) Q[2,:] = hk end
 
     for k = 2:n 
         # hk = h_k(x), hkm1 = h_{k-1}(x) (actually, recaled versions thereof)
-        # reassign values
         hkm1, hk = hk, sqrt(2/k)* x .* hk - sqrt((k-1)/k)*hkm1
-        # rescale values
+        # rescale values if necessary
         scale = (x->(x<1) ? 1 : inv(x)).(abs.(hk))
         hk .*= scale
         hkm1 .*=  scale
-        C[k+1,:] = hk
+        Q[k+1,:] = hk
         # keep track of rescaling factors
         cum_log_scale[k+1,:] = cum_log_scale[k,:] + log.(scale)
     end
     
     # the function values should be weighted by these
-    valweights = exp.(cum_log_scale[n+1,:] + x.^2 / 2) ./ (sqrt(n+1)*C[n+1,:])
+    valweights = exp.(cum_log_scale[n+1,:] + x.^2 / 2) ./ (sqrt(n+1)*abs.(Q[n+1,:]))
     
-    # C contains rescaled Hermite polynomials. Need to convert to unscaled ψ_k(x_j)/(sqrt(n+1)ψ_n(x_j)).
+    # Q contains rescaled Hermite polynomials. Need to convert to unscaled ψ_k(x_j)/(sqrt(n+1)ψ_n(x_j)),
+    # where ψ_n is the degree n Hermite function
     for k = 1:n+1
-        C[k,:] = C[k,:]./C[n+1,:] .* exp.(cum_log_scale[n+1,:]-cum_log_scale[k,:] .- .5*log(n+1))
+        Q[k,:] = Q[k,:]./abs.(Q[n+1,:]) .* exp.(cum_log_scale[n+1,:]-cum_log_scale[k,:] .- .5*log(n+1))
     end
 
-    return valweights, C
+    return valweights, Q
 end
 
 function plan_transform(S::HermiteFSE,vals::AbstractVector)
-    valweights, C = plan_Hermite_transform(length(vals)-1)
-    TransformPlan(S,(valweights,C),Val{false})
+    valweights, Q = plan_Hermite_transform(length(vals)-1)
+    TransformPlan(S,(valweights,Q),Val{false})
 end
 function plan_itransform(S::HermiteFSE,cfs::AbstractVector)
-    valweights, C = plan_Hermite_transform(length(cfs)-1)
-    ITransformPlan(S,(valweights,C),Val{false})
+    valweights, Q = plan_Hermite_transform(length(cfs)-1)
+    ITransformPlan(S,(valweights,Q),Val{false})
 end
 
 function *(P::TransformPlan{T,S,false},vals::AbstractVector) where {T,S<:HermiteFSE}
-    valweights,C = P.plan
-    C*(valweights.*vals)
+    valweights,Q = P.plan
+    Q*(valweights.*vals)
 end
 function *(P::ITransformPlan{T,S,false},cfs::AbstractVector) where {T,S<:HermiteFSE}
-    valweights,C = P.plan
-    (C' * cfs) ./ valweights
+    valweights,Q = P.plan
+    (Q' * cfs) ./ valweights
 end
