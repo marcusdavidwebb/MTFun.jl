@@ -65,6 +65,5 @@ spacescompatible(a::MalmquistTakenaka,b::Weideman) = a.λ == b.λ
 include("transforms.jl")
 include("evalandplot.jl")
 include("operators.jl")
-include("Schrodinger.jl")
 
 end # module
