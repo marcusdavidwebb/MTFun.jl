@@ -27,7 +27,7 @@ end
 ## Transforms for Weideman Space
 hasfasttransform(::Weideman) = true
 # note that one of these points is always infinity
-points(S::Weideman{T},n::Int) where T = real(S.λ) .+ imag(S.λ)*tan.(range(zero(T) ,length=n,step=π/n))
+points(S::Weideman{T},n::Int) where T = real(S.λ) .+ imag(S.λ)*tan.(range(zero(real(T)) ,length=n,step=π/n))
 
 function plan_transform(S::Weideman,vals::AbstractVector)
     TransformPlan(S,FastTransforms.plan_fft(complex(vals)),Val{false})
