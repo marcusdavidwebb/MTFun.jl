@@ -38,7 +38,7 @@ end
     λ = S.λ
     a = real(λ) - 30*imag(λ)
     b = real(λ) + 30*imag(λ)
-    cfs = coefficients(F)
+    cfs = copy(coefficients(F))
     if length(cfs) < 200
         pad!(cfs,200)
     end
