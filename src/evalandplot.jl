@@ -45,7 +45,7 @@ end
     n = length(cfs)
     pts = points(S,n)
     pts = [pts[div(n,2)+2:n]; pts[1:div(n,2)+mod(n,2)]]
-    vals = values(F)
+    vals = values(Fun(space(F),cfs))
     vals = [vals[div(n,2)+2:n]; vals[1:div(n,2)+mod(n,2)]]
     
     inds = findall(x -> a ≤ x ≤ b,pts)
