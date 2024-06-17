@@ -122,6 +122,6 @@ function getindex(D::ConcreteDerivative{MalmquistTakenaka{T},K,KK},k::Integer,j:
             zero(T)
         end
     else
-        error("Higher order MalmquistTakenaka derivatives are not supported yet")
+        error("Higher order Malmquist--Takenaka derivatives are not supported yet")
     end
 end

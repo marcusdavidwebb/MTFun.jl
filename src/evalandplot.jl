@@ -33,7 +33,7 @@ function hatify(cfs::AbstractVector)
     -div(n,2)-mod(n,2):div(n,2)-1, newcfs
 end
 
-@recipe function f(F::Fun{Sp,T,Vector{T}}) where {Sp<:Union{MalmquistTakenaka,Weideman},T}
+function get_grid_and_vals(F::Fun{Sp,T,Vector{T}}) where {Sp<:Union{MalmquistTakenaka,Weideman},T}
     S = space(F)
     λ = S.λ
     a = real(λ) - 30*imag(λ)
@@ -49,13 +49,15 @@ end
     vals = [vals[div(n,2)+2:n]; vals[1:div(n,2)+mod(n,2)]]
     
     inds = findall(x -> a ≤ x ≤ b,pts)
-    @series begin 
-        pts[inds],real(vals[inds])
-    end
-    if maximum(abs.(imag(vals[inds]))) ≥ 1e-6
-        @series begin
-            pts[inds],imag(vals[inds])
-        end
+    pts = pts[inds]
+    vals = vals[inds]
+    if maximum(abs.(imag(vals))) ≥ 1e-6
+        pts, hcat(real(vals), imag(vals))
+    else
+        pts, real(vals)
     end
 end
 
+Plots.@recipe f(F::Fun{Sp,T,Vector{T}}) where {Sp<:Union{MalmquistTakenaka,Weideman},T} = get_grid_and_vals(F)
+
+MakieCore.convert_arguments(P::Type{<:Lines}, F::Fun{Sp,T,Vector{T}}) where {Sp<:Union{MalmquistTakenaka,Weideman},T} = MakieCore.convert_arguments(P, get_grid_and_vals(F)...)

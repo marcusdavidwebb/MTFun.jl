@@ -1,8 +1,8 @@
 module MTFun
 
-using ApproxFun, FastTransforms, Plots, LinearAlgebra
-import ApproxFun: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
-import ApproxFun: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
+using ApproxFun, FastTransforms, Plots, MakieCore, LinearAlgebra
+import ApproxFunBase: points, plan_transform, plan_itransform, TransformPlan, ITransformPlan, domain, canonicaldomain, spacescompatible, evaluate
+import ApproxFunBase: Multiplication, ConcreteMultiplication, Derivative, ConcreteDerivative, space, rangespace, bandwidths
 import Base: *, first, last, getindex
 export MalmquistTakenaka, Weideman
 export hatify
