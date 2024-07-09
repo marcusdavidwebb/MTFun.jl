@@ -16,6 +16,32 @@ sg = SliderGrid(f[2,1],
 parameters = [s.value for s ∈ sg.sliders]
 lines!(pts, lift(vals, parameters...))
 
+using CairoMakie
+CairoMakie.activate!()
+f = Figure(size=(400,300))
+ω = 0
+α = 1
+x0 = 0
+ax1 = Axis(f[1,1], limits=(-5,5,-2,2), xlabel=L"x")
+lines!(pts, wp(ω, α, x0).(pts), color=Makie.wong_colors()[1])
+save("/Users/marcus/The University of Manchester Dropbox/Marcus Webb/Talks/24-06-19 Manchester BMC/Figures/gaussian.pdf", f)
+
+f = Figure(size=(400,300))
+ω = 30
+α = 1
+x0 = 0
+ax1 = Axis(f[1,1], limits=(-5,5,-2,2), xlabel=L"x")
+lines!(pts, cos.(ω .* pts), color=Makie.wong_colors()[2])
+save("/Users/marcus/The University of Manchester Dropbox/Marcus Webb/Talks/24-06-19 Manchester BMC/Figures/cos.pdf", f)
+
+f = Figure(size=(400,300))
+ω = 30
+α = 1
+x0 = 0
+ax1 = Axis(f[1,1], limits=(-5,5,-2,2), xlabel=L"x")
+lines!(pts, wp(ω, α, x0).(pts), color=Makie.wong_colors()[3])
+save("/Users/marcus/The University of Manchester Dropbox/Marcus Webb/Talks/24-06-19 Manchester BMC/Figures/wp1.pdf", f)
+
 using ApproxFun, MTFun
 
 # Coeffs plot figure
